@@ -3,18 +3,19 @@ on:
   workflow_dispatch:
   push:
     paths:
-      - '**/*'
+      - '**.c'
+      - '**.h'
+      - 'Makefile'
 jobs:
   build:
-    runs-on: ubuntu-latest
+    runs-on: windows-latest
     steps:
       - uses: actions/checkout@v4
-      - name: Install dependencies
-        run: |
-          sudo apt update
-          sudo apt install -y build-essential mingw-w64 wget xxd make
+      - name: Install MinGW
+        uses: ilammy/msvc-dev-cmd@v1
       - name: Build exe
         run: |
+          choco install mingw -y
           make newflasher.exe
       - name: Upload artifact
         uses: actions/upload-artifact@v4
