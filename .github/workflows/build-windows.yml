@@ -27,7 +27,9 @@ jobs:
       - name: Build newflasher.exe
         run: |
           set -e
+          rm -f newflasher.exe
           make newflasher.exe
+          ls -la
 
       - name: Upload artifact
         uses: actions/upload-artifact@v4
