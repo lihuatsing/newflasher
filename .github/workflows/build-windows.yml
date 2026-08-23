@@ -7,19 +7,18 @@ on:
 
 jobs:
   build:
-    runs-on: ubuntu-latest
+    runs-on: windows-latest
     steps:
       - uses: actions/checkout@v4
 
-      - name: Install dependencies
+      - name: Install MinGW‑w64
         run: |
-          sudo apt update
-          sudo apt install -y build-essential mingw-w64 wget xxd make
+          choco install mingw -y
+          echo "C:\Program Files\mingw-w64\x86_64-8.1.0-release-posix-seh-rt_v6-rev0\mingw64\bin" | Out-File -FilePath $env:GITHUB_PATH -Append
 
-      - name: Build exe, pass CC to all sub‑makes
+      - name: Build exe
         run: |
-          set -e
-          make CC=x86_64-w64-mingw32-gcc CXX=x86_64-w64-mingw32-g++ newflasher.exe
+          make newflasher.exe
 
       - name: Upload artifact
         uses: actions/upload-artifact@v4
