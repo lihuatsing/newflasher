@@ -36,7 +36,7 @@ cross: newflasher.exe newflasher.x64 newflasher.i386 newflasher.arm32 newflasher
 .PHONY: libs
 libs:
 	@mkdir -p include
-	@test -d zlib-1.3.1 && echo "" || wget https://zlib.net/zlib-1.3.1.tar.gz
+	@test -d zlib-1.3.1 && echo "" || wget https://github.com/madler/zlib/releases/download/v1.3.1/zlib-1.3.1.tar.gz
 	@test -d zlib-1.3.1 && echo "" || tar xzf zlib-1.3.1.tar.gz
 	@rm -rf zlib-1.3.1.tar.gz
 	@test -d expat-2.2.9 && echo "" || wget https://github.com/libexpat/libexpat/releases/download/R_2_2_9/expat-2.2.9.tar.gz
