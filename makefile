@@ -45,6 +45,3 @@ newflasher: newflasher.c version.h
 newflasher.exe: libs newflasher.c version.h
 	@cd zlib-1.3.1 && CC=${CCWIN} ./configure --static && make clean && make
 	@cd expat-2.2.9 && CC="${CCWIN} -fPIC" ./configure --enable-static --disable-shared --host=i686-w64-mingw32 && make clean && make
-	@test -f include/GordonGate.h && echo "" || wget https://software.sonymobile.com/drivers/installers/latest/Sony_Mobile_Software_Update_Drivers_x64_Setup.msi -O GordonGate
-	@test -f include/GordonGate.h && echo "" || xxd --include GordonGate > include/GordonGate.h
-	@rm -rf GordonGate
