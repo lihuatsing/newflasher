@@ -1,1 +1,23 @@
-
+name: build-windows
+on:
+  workflow_dispatch:
+  push:
+    paths:
+      - '**/*'
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Install dependencies
+        run: |
+          sudo apt update
+          sudo apt install -y build-essential mingw-w64 wget xxd make
+      - name: Build exe
+        run: |
+          make newflasher.exe
+      - name: Upload artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: newflasher-win
+          path: newflasher.exe
