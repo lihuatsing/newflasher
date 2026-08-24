@@ -38,7 +38,7 @@ jobs:
           set -euo pipefail
           rm -f newflasher.exe
           cd zlib-1.3.1 && CC=i686-w64-mingw32-gcc ./configure --static && make clean && make
-          cd ../expat-2.2.9 && CC="i686-w64-mingw32-gcc -fPIC" ./configure --enable-static --disable-shared --host=i686-w64-mingw32 && make clean && make
+          cd ../expat-2.2.9 && CC="i686-w64-mingw32-gcc" ./configure --enable-static --disable-shared --host=i686-w64-mingw32 && make clean && make
           cd ..
           i686-w64-mingw32-gcc -Wall -g -O2 newflasher.c -o newflasher.exe -I include -I zlib-1.3.1 -L zlib-1.3.1 -I expat-2.2.9/lib -L expat-2.2.9/lib/.libs -lz -lexpat
           ls -la
