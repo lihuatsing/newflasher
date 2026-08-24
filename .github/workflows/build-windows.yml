@@ -29,7 +29,7 @@ jobs:
           set -e
           rm -f newflasher.exe
           make newflasher.exe
-          ls -la
+          ls -l
 
       - name: Upload artifact
         uses: actions/upload-artifact@v4
