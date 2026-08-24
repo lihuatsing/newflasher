@@ -1,6 +1,9 @@
 name: build-windows
 on:
   workflow_dispatch:
+    inputs:
+      dummy:
+        description: manual run
   push:
     paths:
       - '**/*'
@@ -9,7 +12,7 @@ jobs:
   build:
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v5
 
       - name: Install dependencies
         run: |
@@ -18,7 +21,7 @@ jobs:
 
       - name: Pre‑download lib packages
         run: |
-          set -e
+          set -euo pipefail
           rm -f zlib-1.3.1.tar.gz
           wget -O zlib-1.3.1.tar.gz https://github.com/madler/zlib/releases/download/v1.3.1/zlib-1.3.1.tar.gz
           rm -f expat-2.2.9.tar.gz
@@ -26,13 +29,13 @@ jobs:
 
       - name: Build newflasher.exe
         run: |
-          set -e
+          set -euo pipefail
           rm -f newflasher.exe
-          make newflasher.exe
-          ls -l
+          make newflasher.exe 2>&1
+          ls -la
 
       - name: Upload artifact
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v5
         with:
           name: newflasher-win
           path: newflasher.exe
