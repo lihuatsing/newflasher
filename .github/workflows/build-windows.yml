@@ -72,3 +72,10 @@ jobs:
             -lusb-1.0 -lexpat -lz -lws2_32 -lsetupapi -ladvapi32 -lole32
 
           ls -la newflasher.exe
+
+      - name: Upload artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: newflasher-windows-x64
+          path: ./*.exe
+          if-no-files-found: error
