@@ -12,12 +12,12 @@ jobs:
   build:
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v5
+      - uses: actions/checkout@v4
 
       - name: Install dependencies
         run: |
           sudo apt update
-          sudo apt install -y build-essential mingw-w64 wget xxd make
+          sudo apt install -y build-essential mingw-w64 wget xxd make tar bzip2
 
       - name: Pre‑download lib packages
         run: |
@@ -26,30 +26,56 @@ jobs:
           wget -O zlib-1.3.1.tar.gz https://github.com/madler/zlib/releases/download/v1.3.1/zlib-1.3.1.tar.gz
           rm -f expat-2.2.9.tar.gz
           wget -O expat-2.2.9.tar.gz https://github.com/libexpat/libexpat/releases/download/R_2_2_9/expat-2.2.9.tar.gz
+          rm -f libusb-1.0.27.tar.bz2
+          wget -O libusb-1.0.27.tar.bz2 https://github.com/libusb/libusb/releases/download/v1.0.27/libusb-1.0.27.tar.bz2
 
       - name: Unpack libraries
         run: |
           set -euo pipefail
           test -d zlib-1.3.1 || tar xzf zlib-1.3.1.tar.gz
           test -d expat-2.2.9 || tar xzf expat-2.2.9.tar.gz
+          test -d libusb-1.0.27 || tar xjf libusb-1.0.27.tar.bz2
 
-      - name: Build newflasher.exe
+      - name: Build 64-bit static libraries
+        run: |
+          set -euo pipefail
+          
+          # 1. 编译 64位 zlib
+          cd zlib-1.3.1
+          make -f win32/Makefile.gcc PREFIX=x86_64-w64-mingw32- CC=x86_64-w64-mingw32-gcc CFLAGS="-O3 -D_FILE_OFFSET_BITS=64" clean libz.a
+          cd ..
+
+          # 2. 编译 64位 expat
+          cd expat-2.2.9
+          ./configure --enable-static --disable-shared --host=x86_64-w64-mingw32 CC="x86_64-w64-mingw32-gcc -D_FILE_OFFSET_BITS=64"
+          make clean && make -j$(nproc)
+          cd ..
+
+          # 3. 编译 64位 libusb
+          cd libusb-1.0.27
+          ./configure --enable-static --disable-shared --host=x86_64-w64-mingw32 CC="x86_64-w64-mingw32-gcc -D_FILE_OFFSET_BITS=64"
+          make clean && make -j$(nproc)
+          cd ..
+
+      - name: Build 64-bit newflasher.exe
         run: |
           set -euo pipefail
           rm -f newflasher.exe
-          cd zlib-1.3.1 && CC="i686-w64-mingw32-gcc" ./configure --static && make clean && make
-          cd ..
-          cd expat-2.2.9 && CC="i686-w64-mingw32-gcc" ./configure --enable-static --disable-shared --host=i686-w64-mingw32 && make clean && make
-          cd ..
-          wget -q https://github.com/libusb/libusb/releases/download/v1.0.27/libusb-1.0.27.tar.bz2
-          tar -xf libusb-1.0.27.tar.bz2
-          cd libusb-1.0.27 && CC="i686-w64-mingw32-gcc" ./configure --enable-static --disable-shared --host=i686-w64-mingw32 && make clean && make
-          cd ..
-          i686-w64-mingw32-gcc -Wall -g -O2 newflasher.c -o newflasher.exe -I include -I zlib-1.3.1 -L zlib-1.3.1 -I expat-2.2.9/lib -L expat-2.2.9/lib/.libs -I libusb-1.0.27/libusb -L libusb-1.0.27/libusb/.libs -lz -lexpat -lusb-1.0 -lws2_32 -lsetupapi
-          ls -la
+
+          # 核心：全面换用 x86_64 编译器并开启大文件支持标志
+          x86_64-w64-mingw32-gcc -Wall -O2 \
+            -D_FILE_OFFSET_BITS=64 \
+            -D_LARGEFILE64_SOURCE \
+            newflasher.c -o newflasher.exe \
+            -I. -Izlib-1.3.1 -Iexpat-2.2.9/lib -Ilibusb-1.0.27/libusb \
+            -Lzlib-1.3.1 -Lexpat-2.2.9/lib/.libs -Llibusb-1.0.27/libusb/.libs \
+            -static \
+            -lusb-1.0 -lexpat -lz -lws2_32 -lsetupapi -ladvapi32 -lole32
+
+          ls -la newflasher.exe
 
       - name: Upload artifact
         uses: actions/upload-artifact@v4
         with:
-          name: newflasher-windows
+          name: newflasher-windows-x64
           path: newflasher.exe
